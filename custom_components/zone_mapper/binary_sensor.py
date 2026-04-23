@@ -46,6 +46,7 @@ from .const import (
     STORE_ENTITIES,
     STORE_ZONES,
 )
+from .helpers import link_entity_to_tracked_device
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -268,6 +269,7 @@ class ZonePresenceBinarySensor(BinarySensorEntity):
             EVENT_ZONE_UPDATED, handle_zone_update
         )
         self.update_tracked_entities()
+        link_entity_to_tracked_device(self.hass, self.entity_id, self._location_name)
 
     async def async_will_remove_from_hass(self) -> None:
         """Tear down listeners before removing the entity."""
@@ -306,6 +308,7 @@ class ZonePresenceBinarySensor(BinarySensorEntity):
                 entity_ids,
                 self.handle_entity_update,
             )
+        link_entity_to_tracked_device(self.hass, self.entity_id, self._location_name)
 
     @callback
     def handle_entity_update(self, _event: Event[EventStateChangedData]) -> None:

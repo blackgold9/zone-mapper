@@ -24,6 +24,7 @@ from .const import (
     STORE_ENTITIES,
     STORE_ZONES,
 )
+from .helpers import link_entity_to_tracked_device
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -130,6 +131,7 @@ class ZoneCoordsSensor(RestoreEntity, SensorEntity):
             location=safe_location, zone_id=zone_id
         )
         self._attr_should_poll = False
+        self._attr_entity_registry_visible_default = False
         self._coords: dict[str, Any] = {ATTR_SHAPE: None, ATTR_DATA: None}
         self._entities: list[dict[str, str]] = []
 
@@ -218,6 +220,8 @@ class ZoneCoordsSensor(RestoreEntity, SensorEntity):
                 EVENT_ZONE_UPDATED, {"location": self._location_name}
             )
 
+        link_entity_to_tracked_device(self.hass, self.entity_id, self._location_name)
+
         # Sync from hass.data for display
         self.update_attributes()
 
@@ -226,6 +230,9 @@ class ZoneCoordsSensor(RestoreEntity, SensorEntity):
         """Handle zone data update from the bus."""
         if event.data.get("location") == self._location_name:
             self.update_attributes()
+            link_entity_to_tracked_device(
+                self.hass, self.entity_id, self._location_name
+            )
             self.async_write_ha_state()
 
     def update_attributes(self) -> None:
